@@ -3,71 +3,340 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-// 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers'])
+    angular.module('LURCH', ['ionic','firebase','LURCH.configs'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform,CONFIG) {
   $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    if (window.cordova && window.cordova.plugins.Keyboard) {
+    if(window.cordova && window.cordova.plugins.Keyboard) {
+      // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+      // for form inputs)
+      // Don't remove this line unless you know what you are doing. It stops the viewport
+      // from snapping when text inputs are focused. Ionic handles this internally for
+      // a much nicer keyboard experience.
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
       cordova.plugins.Keyboard.disableScroll(true);
 
+      
     }
-    if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
+    if(window.StatusBar) {
       StatusBar.styleDefault();
     }
+
+    firebase.initializeApp({
+      apiKey: CONFIG.FIREBASE_API,
+      authDomain: CONFIG.FIREBASE_AUTH_DOMAIN,
+      databaseURL: CONFIG.FIREBASE_DB_URL,
+      storageBucket: CONFIG.FIREBASE_STORAGE,
+      messagingSenderId: CONFIG.FIREBASE_STORAGE
+    });
+
+
   });
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
-  $stateProvider
+.config(['$stateProvider', '$urlRouterProvider','$ionicConfigProvider',function($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
+    
+    $ionicConfigProvider.navBar.alignTitle('center');
+
+    $stateProvider
 
     .state('app', {
-    url: '/app',
-    abstract: true,
-    templateUrl: 'templates/menu.html',
-    controller: 'AppCtrl'
-  })
+      url: '/app',
+      abstract: true,
+      templateUrl: 'templates/menu.html',
+      controller: 'appController'
+    })
 
-  .state('app.search', {
-    url: '/search',
-    views: {
-      'menuContent': {
-        templateUrl: 'templates/search.html'
-      }
-    }
-  })
+    .state('login', {
+      url: '/login',
+      templateUrl: "templates/login.html",
+      controller: "loginController"
+    })
 
-  .state('app.browse', {
-      url: '/browse',
+    .state('signup', {
+      url: '/signup',
+      templateUrl: "templates/signup.html",
+      controller: "signupController"
+    })
+
+    .state('reset', {
+      url: '/reset',
+      templateUrl: "templates/resetemail.html",
+      controller: "resetController"
+    })
+
+    .state('intro', {
+      url: '/intro',
       views: {
         'menuContent': {
-          templateUrl: 'templates/browse.html'
+          templateUrl: "templates/intro.html",
+          controller: "introController"
         }
       }
     })
-    .state('app.playlists', {
-      url: '/playlists',
+
+    .state('app.dashboard', {
+      url: '/app/dashboard',
       views: {
         'menuContent': {
-          templateUrl: 'templates/playlists.html',
-          controller: 'PlaylistsCtrl'
+          templateUrl: "templates/dashboard.html",
+          controller: "dashboardController"
         }
       }
     })
+      
+    $urlRouterProvider.otherwise('/login');
 
-  .state('app.single', {
-    url: '/playlists/:playlistId',
-    views: {
-      'menuContent': {
-        templateUrl: 'templates/playlist.html',
-        controller: 'PlaylistCtrl'
-      }
+}])
+
+.controller('loginController',['$scope', '$firebaseArray', 'CONFIG', '$document', '$state', function($scope, $firebaseArray, CONFIG, $document, $state) {
+
+
+
+  // Perform the login action when the user submits the login form
+  $scope.doLogin = function(userLogin) {
+    
+
+   
+    console.log(userLogin);
+
+    if($document[0].getElementById("user_name").value != "" && $document[0].getElementById("user_pass").value != ""){
+
+
+        firebase.auth().signInWithEmailAndPassword(userLogin.username, userLogin.password).then(function() {
+          // Sign-In successful.
+          //console.log("Login successful");
+
+
+          
+
+                    var user = firebase.auth().currentUser;
+
+                    var name, email, photoUrl, uid;
+
+                    if(user.emailVerified) { //check for verification email confirmed by user from the inbox
+
+                      console.log("email verified");
+                      $state.go("app.dashboard");
+
+                      name = user.displayName;
+                      email = user.email;
+                      photoUrl = user.photoURL;
+                      uid = user.uid;  
+
+                      //console.log(name + "<>" + email + "<>" +  photoUrl + "<>" +  uid);
+
+                      localStorage.setItem("photo",photoUrl);
+
+                    }else{
+
+                        alert("Email not verified, please check your inbox or spam messages")
+                        return false;
+
+                    } // end check verification email
+
+           
+        }, function(error) {
+          // An error happened.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log(errorCode);
+          if (errorCode === 'auth/invalid-email') {
+             alert('Entrez un e-mail valide.');
+             return false;
+          }else if (errorCode === 'auth/wrong-password') {
+             alert('Mauvais mot de passe.');
+             return false;
+          }else if (errorCode === 'auth/argument-error') {
+             alert('Le mot de passe doit être des lettres et chiffres.');
+             return false;
+          }else if (errorCode === 'auth/user-not-found') {
+             alert('Pas de compte trouvé.');
+             return false;
+          }else if (errorCode === 'auth/too-many-requests') {
+             alert('Trop de tentatives, Essayez plus tard.');
+             return false;
+          }else if (errorCode === 'auth/network-request-failed') {
+             alert('Time out, Essayez encore.');
+             return false;
+          }else {
+             alert(errorMessage);
+             return false;
+          }
+        });
+
+
+
+    }else{
+
+        alert('Entrez un e-mail et un mot de passe');
+        return false;
+
+    }//end check client username password
+
+    
+  };// end $scope.doLogin()
+
+}]) 
+
+.controller('appController',['$scope', '$firebaseArray', 'CONFIG', '$document', '$state', function($scope, $firebaseArray, CONFIG, $document, $state) {
+
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        
+      $document[0].getElementById("photo_user").src = localStorage.getItem("photo");
+          
+        
+    } else {
+      // No user is signed in.
+      $state.go("login");
     }
   });
-  // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/playlists');
-});
+
+
+  $scope.doLogout = function(){
+      
+      firebase.auth().signOut().then(function() {
+        // Sign-out successful.
+        //console.log("Logout successful");
+        $state.go("login");
+
+      }, function(error) {
+        // An error happened.
+        console.log(error);
+      });
+
+}// end dologout()
+
+
+
+}])
+
+.controller('resetController', ['$scope', '$state', '$document', '$firebaseArray', 'CONFIG', function($scope, $state, $document, $firebaseArray, CONFIG) {
+
+$scope.doResetemail = function(userReset) {
+    
+
+   
+    //console.log(userReset);
+
+    if($document[0].getElementById("ruser_name").value != ""){
+
+
+        firebase.auth().sendPasswordResetEmail(userReset.rusername).then(function() {
+          // Sign-In successful.
+          //console.log("Reset email sent successful");
+          
+          $state.go("login");
+
+
+        }, function(error) {
+          // An error happened.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log(errorCode);
+
+          
+          if (errorCode === 'auth/user-not-found') {
+             alert('Pas de compte trouvé avec le mail entré.');
+             return false;
+          }else if (errorCode === 'auth/invalid-email') {
+             alert('E-mail incomplet ou invalide.');
+             return false;
+          }
+          
+        });
+
+
+
+    }else{
+
+        alert('Please enter registered email to send reset link');
+        return false;
+
+    }//end check client username password
+
+    
+  };// end $scope.doSignup()
+  
+  
+  
+}])
+
+
+
+.controller('signupController', ['$scope', '$state', '$document', '$firebaseArray', 'CONFIG', function($scope, $state, $document, $firebaseArray, CONFIG) {
+
+$scope.doSignup = function(userSignup) {
+    
+
+   
+    //console.log(userSignup);
+
+    if($document[0].getElementById("cuser_name").value != "" && $document[0].getElementById("cuser_pass").value != ""){
+
+
+        firebase.auth().createUserWithEmailAndPassword(userSignup.cusername, userSignup.cpassword).then(function() {
+          // Sign-In successful.
+          //console.log("Signup successful");
+
+          var user = firebase.auth().currentUser;
+
+          user.sendEmailVerification().then(function(result) { console.log(result) },function(error){ console.log(error)}); 
+
+          user.updateProfile({
+            displayName: userSignup.displayname,
+            photoURL: userSignup.photoprofile
+          }).then(function() {
+            // Update successful.
+            $state.go("login");
+          }, function(error) {
+            // An error happened.
+            console.log(error);
+          });
+          
+          
+
+
+        }, function(error) {
+          // An error happened.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log(errorCode);
+
+          if (errorCode === 'auth/weak-password') {
+             alert('Mot de passe trop faible.');
+             return false;
+          }else if (errorCode === 'auth/email-already-in-use') {
+             alert('Email déjà utilisé.');
+             return false;
+          }
+
+
+
+          
+        });
+
+
+
+    }else{
+
+        alert('Veuillez entrer un e-mail et un mot de passe.');
+        return false;
+
+    }//end check client username password
+
+    
+  };// end $scope.doSignup()
+  
+  
+  
+}])
+
+
+.controller('dashboardController', ['$scope', '$firebaseArray', 'CONFIG', function($scope, $firebaseArray, CONFIG) {
+// TODO: Show profile data
+  
+  
+}]);
+

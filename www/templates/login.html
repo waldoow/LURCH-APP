@@ -1,25 +1,31 @@
-<ion-modal-view>
-  <ion-header-bar>
-    <h1 class="title">Login</h1>
-    <div class="buttons">
-      <button class="button button-clear" ng-click="closeLogin()">Close</button>
-    </div>
-  </ion-header-bar>
-  <ion-content>
-    <form ng-submit="doLogin()">
-      <div class="list">
-        <label class="item item-input">
-          <span class="input-label">Username</span>
-          <input type="text" ng-model="loginData.username">
-        </label>
-        <label class="item item-input">
-          <span class="input-label">Password</span>
-          <input type="password" ng-model="loginData.password">
-        </label>
-        <label class="item">
-          <button class="button button-block button-positive" type="submit">Log in</button>
-        </label>
-      </div>
-    </form>
+<ion-view hide-back-button="false" title="Login" hide-nav-bar="false" >
+  <ion-content class="has-header">
+
+	<form name="form_login" ng-submit="doLogin(userLogin)" novalidate>
+	  	<div class="list">
+
+		  <label class="item item-input item-floating-label">
+		    <span class="input-label">Email</span>
+		    <input type="text" ng-model="$parent.userLogin.username" id="user_name" placeholder="Email">
+		  </label>
+
+		  <label class="item item-input item-floating-label">
+		    <span class="input-label">Password</span>
+		    <input type="text" ng-model="$parent.userLogin.password" id="user_pass" placeholder="Password">
+		  </label>
+
+		</div>
+		<div class="padding">
+			<button type="submit" class="button button-full button-dark">Login</button>
+		</div>
+	 </form>
+
+	 <div class="padding">
+	    <button type="submit" class="button button-full button-dark" ui-sref="signup">Signup</button>
+	 </div>
+	 <div class="padding">
+		<button type="submit" class="button button-dark" ui-sref="reset">Forgot Password</button>
+	 </div>
+
   </ion-content>
-</ion-modal-view>
+</ion-view>
