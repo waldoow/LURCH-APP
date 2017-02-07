@@ -16,7 +16,7 @@
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
       cordova.plugins.Keyboard.disableScroll(true);
 
-      
+
     }
     if(window.StatusBar) {
       StatusBar.styleDefault();
@@ -35,7 +35,7 @@
 })
 
 .config(['$stateProvider', '$urlRouterProvider','$ionicConfigProvider',function($stateProvider, $urlRouterProvider, $ionicConfigProvider) {
-    
+
     $ionicConfigProvider.navBar.alignTitle('center');
 
     $stateProvider
@@ -84,7 +84,7 @@
         }
       }
     })
-      
+
     $urlRouterProvider.otherwise('/login');
 
 }])
@@ -93,22 +93,18 @@
 
 
 
-  // Perform the login action when the user submits the login form
   $scope.doLogin = function(userLogin) {
-    
 
-   
+
+
     console.log(userLogin);
 
     if($document[0].getElementById("user_name").value != "" && $document[0].getElementById("user_pass").value != ""){
 
 
         firebase.auth().signInWithEmailAndPassword(userLogin.username, userLogin.password).then(function() {
-          // Sign-In successful.
-          //console.log("Login successful");
 
 
-          
 
                     var user = firebase.auth().currentUser;
 
@@ -122,9 +118,8 @@
                       name = user.displayName;
                       email = user.email;
                       photoUrl = user.photoURL;
-                      uid = user.uid;  
+                      uid = user.uid;
 
-                      //console.log(name + "<>" + email + "<>" +  photoUrl + "<>" +  uid);
 
                       localStorage.setItem("photo",photoUrl);
 
@@ -135,9 +130,8 @@
 
                     } // end check verification email
 
-           
+
         }, function(error) {
-          // An error happened.
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log(errorCode);
@@ -172,21 +166,21 @@
         alert('Entrez un e-mail et un mot de passe');
         return false;
 
-    }//end check client username password
+    }
 
-    
-  };// end $scope.doLogin()
 
-}]) 
+  };
+
+}])
 
 .controller('appController',['$scope', '$firebaseArray', 'CONFIG', '$document', '$state', function($scope, $firebaseArray, CONFIG, $document, $state) {
 
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
-        
+
       $document[0].getElementById("photo_user").src = localStorage.getItem("photo");
-          
-        
+
+
     } else {
       // No user is signed in.
       $state.go("login");
@@ -195,19 +189,15 @@
 
 
   $scope.doLogout = function(){
-      
+
       firebase.auth().signOut().then(function() {
-        // Sign-out successful.
-        //console.log("Logout successful");
         $state.go("login");
 
       }, function(error) {
-        // An error happened.
         console.log(error);
       });
 
-}// end dologout()
-
+}
 
 
 }])
@@ -215,28 +205,25 @@
 .controller('resetController', ['$scope', '$state', '$document', '$firebaseArray', 'CONFIG', function($scope, $state, $document, $firebaseArray, CONFIG) {
 
 $scope.doResetemail = function(userReset) {
-    
 
-   
-    //console.log(userReset);
+
+
 
     if($document[0].getElementById("ruser_name").value != ""){
 
 
         firebase.auth().sendPasswordResetEmail(userReset.rusername).then(function() {
-          // Sign-In successful.
-          //console.log("Reset email sent successful");
-          
+
+
           $state.go("login");
 
 
         }, function(error) {
-          // An error happened.
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log(errorCode);
 
-          
+
           if (errorCode === 'auth/user-not-found') {
              alert('Pas de compte trouvé avec le mail entré.');
              return false;
@@ -244,7 +231,7 @@ $scope.doResetemail = function(userReset) {
              alert('E-mail incomplet ou invalide.');
              return false;
           }
-          
+
         });
 
 
@@ -254,13 +241,12 @@ $scope.doResetemail = function(userReset) {
         alert('Please enter registered email to send reset link');
         return false;
 
-    }//end check client username password
+    }
 
-    
-  };// end $scope.doSignup()
-  
-  
-  
+
+  };
+
+
 }])
 
 
@@ -268,38 +254,32 @@ $scope.doResetemail = function(userReset) {
 .controller('signupController', ['$scope', '$state', '$document', '$firebaseArray', 'CONFIG', function($scope, $state, $document, $firebaseArray, CONFIG) {
 
 $scope.doSignup = function(userSignup) {
-    
 
-   
-    //console.log(userSignup);
+
+
 
     if($document[0].getElementById("cuser_name").value != "" && $document[0].getElementById("cuser_pass").value != ""){
 
 
         firebase.auth().createUserWithEmailAndPassword(userSignup.cusername, userSignup.cpassword).then(function() {
-          // Sign-In successful.
-          //console.log("Signup successful");
 
           var user = firebase.auth().currentUser;
 
-          user.sendEmailVerification().then(function(result) { console.log(result) },function(error){ console.log(error)}); 
+          user.sendEmailVerification().then(function(result) { console.log(result) },function(error){ console.log(error)});
 
           user.updateProfile({
             displayName: userSignup.displayname,
             photoURL: userSignup.photoprofile
           }).then(function() {
-            // Update successful.
             $state.go("login");
           }, function(error) {
-            // An error happened.
             console.log(error);
           });
-          
-          
+
+
 
 
         }, function(error) {
-          // An error happened.
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log(errorCode);
@@ -314,7 +294,7 @@ $scope.doSignup = function(userSignup) {
 
 
 
-          
+
         });
 
 
@@ -324,19 +304,46 @@ $scope.doSignup = function(userSignup) {
         alert('Veuillez entrer un e-mail et un mot de passe.');
         return false;
 
-    }//end check client username password
+    }
 
-    
-  };// end $scope.doSignup()
-  
-  
-  
+  };
+
 }])
 
 
-.controller('dashboardController', ['$scope', '$firebaseArray', 'CONFIG', function($scope, $firebaseArray, CONFIG) {
-// TODO: Show profile data
-  
-  
-}]);
+    .controller('dashboardController',['$scope', '$state', '$firebaseAuth', '$firebaseObject',   function($scope, $state, $firebaseAuth, $firebaseObject){
+        var database = firebase.database();
 
+        var storage = firebase.storage();
+        var storageRef = storage.ref();
+
+        var picsRefs = database.ref("arrondissements");
+        var pics = $firebaseObject(picsRefs);
+
+        // to take an action after the data loads, use the $loaded() promise
+       pics.$loaded().then(function() {
+          console.log("loaded record:", pics.$id, pics.premier);
+
+          $scope.pics = [];
+
+         // To iterate the key/value pairs of the object, use angular.forEach()
+         angular.forEach(pics, function(value, key) {
+            console.log(key, value);
+
+            var imgRef = storageRef.child(value);
+
+            var url = imgRef.getDownloadURL().then(function(url) {
+              console.log(url);
+
+              $scope.pics.push(url);
+              $scope.$apply();
+            }).catch(function(error) {
+              // Handle any errors here
+              console.log('Error on getDownloadURL !', error);
+            });
+         });
+       })
+       .catch(function(error) {
+       console.log('Error on $loaded !', error);
+       });
+}]);
