@@ -120,6 +120,13 @@
                       photoUrl = user.photoURL;
                       uid = user.uid;
 
+                      firebase.auth().onAuthStateChanged(function(user) {
+                            if (user) {
+                                user.getToken().then(function(data) {
+                                    console.log(data)
+                                });
+                            }
+                        });
 
                       localStorage.setItem("photo",photoUrl);
 
